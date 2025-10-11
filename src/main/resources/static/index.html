@@ -1,0 +1,229 @@
+<!-- src/main/resources/static/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Users UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+        form, table { max-width: 900px; }
+        input, button { padding: 8px; margin: 4px 0; }
+        table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+        th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+        th { background: #f6f6f6; }
+        .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .muted { color: #666; font-size: 12px; }
+        .error { color: #b00020; }
+        .success { color: #0a7a0a; }
+    </style>
+</head>
+<body>
+<h1>Users</h1>
+
+<section>
+    <h2>Create user</h2>
+    <form id="createForm">
+        <div>
+            <label>RA</label><br />
+            <input id="ra" name="usuarioRA" required />
+        </div>
+        <div>
+            <label>Name</label><br />
+            <input id="nome" name="usuarioNome" required />
+        </div>
+        <div>
+            <label>Password</label><br />
+            <input id="senha" name="usuarioSenha" type="password" required />
+        </div>
+        <button type="submit">Create</button>
+        <span id="createMsg" class="muted"></span>
+    </form>
+</section>
+
+<section>
+    <h2>All users</h2>
+    <div id="listMsg" class="muted"></div>
+    <table id="usersTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>RA</th>
+            <th>Name</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Update (name/password)</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="usersBody"></tbody>
+    </table>
+</section>
+
+<script>
+    const api = {
+      base: '', // same-origin
+      async list() {
+        const res = await fetch(`${this.base}/usuario`);
+        if (!res.ok) throw new Error(`List failed: ${res.status}`);
+        return res.json();
+      },
+      async create(payload) {
+        const res = await fetch(`${this.base}/usuario`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.status !== 201) throw new Error(`Create failed: ${res.status}`);
+        // Location header has the new resource URI, but we just reload the list.
+      },
+      async update(id, payload) {
+        const res = await fetch(`${this.base}/usuario/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.status !== 204) throw new Error(`Update failed: ${res.status}`);
+      },
+      async remove(id) {
+        const res = await fetch(`${this.base}/usuario/${id}`, { method: 'DELETE' });
+        if (res.status !== 204) throw new Error(`Delete failed: ${res.status}`);
+      }
+    };
+
+    const els = {
+      createForm: document.getElementById('createForm'),
+      ra: document.getElementById('ra'),
+      nome: document.getElementById('nome'),
+      senha: document.getElementById('senha'),
+      createMsg: document.getElementById('createMsg'),
+      listMsg: document.getElementById('listMsg'),
+      usersBody: document.getElementById('usersBody')
+    };
+
+    function rowUpdateInputs(user) {
+      const wrapper = document.createElement('div');
+      const nameInput = document.createElement('input');
+      nameInput.placeholder = 'New name';
+      nameInput.value = '';
+      const passInput = document.createElement('input');
+      passInput.placeholder = 'New password';
+      passInput.type = 'password';
+      passInput.value = '';
+      wrapper.appendChild(nameInput);
+      wrapper.appendChild(document.createElement('br'));
+      wrapper.appendChild(passInput);
+      wrapper.appendChild(document.createElement('br'));
+      const btn = document.createElement('button');
+      btn.textContent = 'Update';
+      btn.onclick = async () => {
+        const payload = {};
+        if (nameInput.value.trim()) payload.usuarioNome = nameInput.value.trim();
+        if (passInput.value.trim()) payload.usuarioSenha = passInput.value.trim();
+        if (Object.keys(payload).length === 0) return;
+        try {
+          await api.update(user.usuarioId, payload);
+          await loadUsers();
+        } catch (e) {
+          alert(e.message);
+        }
+      };
+      wrapper.appendChild(btn);
+      return wrapper;
+    }
+
+    function renderUsers(users) {
+      els.usersBody.innerHTML = '';
+      for (const u of users) {
+        const tr = document.createElement('tr');
+
+        const tdId = document.createElement('td');
+        tdId.textContent = u.usuarioId;
+        const tdRa = document.createElement('td');
+        tdRa.textContent = u.usuarioRA;
+        const tdNome = document.createElement('td');
+        tdNome.textContent = u.usuarioNome;
+        const tdCreated = document.createElement('td');
+        tdCreated.textContent = u.creationTimestamp ?? '';
+        const tdUpdated = document.createElement('td');
+        tdUpdated.textContent = u.updateTimestamp ?? '';
+
+        const tdUpdate = document.createElement('td');
+        tdUpdate.appendChild(rowUpdateInputs(u));
+
+        const tdActions = document.createElement('td');
+        tdActions.className = 'row-actions';
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = async () => {
+          if (!confirm('Delete this user?')) return;
+          try {
+            await api.remove(u.usuarioId);
+            await loadUsers();
+          } catch (e) {
+            alert(e.message);
+          }
+        };
+        const viewBtn = document.createElement('button');
+        viewBtn.textContent = 'View';
+        viewBtn.onclick = async () => {
+          try {
+            const res = await fetch(`/usuario/${u.usuarioId}`);
+            if (!res.ok) throw new Error(`View failed: ${res.status}`);
+            const data = await res.json();
+            alert(JSON.stringify(data, null, 2));
+          } catch (e) {
+            alert(e.message);
+          }
+        };
+        tdActions.appendChild(viewBtn);
+        tdActions.appendChild(delBtn);
+
+        tr.append(tdId, tdRa, tdNome, tdCreated, tdUpdated, tdUpdate, tdActions);
+        els.usersBody.appendChild(tr);
+      }
+    }
+
+    async function loadUsers() {
+      els.listMsg.textContent = 'Loading...';
+      try {
+        const users = await api.list();
+        renderUsers(users);
+        els.listMsg.textContent = `${users.length} user(s)`;
+      } catch (e) {
+        els.listMsg.textContent = '';
+        alert(e.message);
+      }
+    }
+
+    els.createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      els.createMsg.textContent = '';
+      const payload = {
+        usuarioRA: els.ra.value.trim(),
+        usuarioNome: els.nome.value.trim(),
+        usuarioSenha: els.senha.value.trim()
+      };
+      if (!payload.usuarioRA || !payload.usuarioNome || !payload.usuarioSenha) {
+        els.createMsg.textContent = 'All fields are required.';
+        els.createMsg.className = 'error';
+        return;
+      }
+      try {
+        await api.create(payload);
+        els.createMsg.textContent = 'Created.';
+        els.createMsg.className = 'success';
+        els.ra.value = '';
+        els.nome.value = '';
+        els.senha.value = '';
+        await loadUsers();
+      } catch (e2) {
+        els.createMsg.textContent = e2.message;
+        els.createMsg.className = 'error';
+      }
+    });
+
+    loadUsers();
+</script>
+</body>
+</html>
