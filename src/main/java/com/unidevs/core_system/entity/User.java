@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
 import java.util.UUID;
 
+// A implementação de 'UserDetails' e todos os imports de segurança foram removidos.
 @Entity
 @Table(name = "Usuarios")
 public class User {
@@ -15,7 +16,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID usuarioId;
 
-    @Column(name = "usuarioRA")
+    @Column(name = "usuarioRA", unique = true, nullable = false)
     private String usuarioRA;
 
     @Column(name = "usuarioNome")
@@ -23,6 +24,8 @@ public class User {
 
     @Column(name = "usuarioSenha")
     private String usuarioSenha;
+
+    // O campo 'usuarioRole' foi removido, pois era apenas para segurança.
 
     @CreationTimestamp
     private Instant creationTimestamp;
@@ -39,6 +42,7 @@ public class User {
         this.usuarioSenha = usuarioSenha;
     }
 
+    // --- GETTERS E SETTERS ---
     public UUID getUsuarioId() {
         return usuarioId;
     }
@@ -86,4 +90,6 @@ public class User {
     public void setUpdateTimestamp(Instant updateTimestamp) {
         this.updateTimestamp = updateTimestamp;
     }
+
+    // Todos os métodos @Override de UserDetails foram removidos.
 }
