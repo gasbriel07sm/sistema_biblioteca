@@ -15,6 +15,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    // O PasswordEncoder foi removido do construtor
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -23,8 +24,9 @@ public class UserService {
         var entity = new User(
                 createUserDto.usuarioRA(),
                 createUserDto.usuarioNome(),
-                createUserDto.usuarioSenha()
+                createUserDto.usuarioSenha() // SALVANDO SENHA EM TEXTO PURO (APENAS PARA TESTE)
         );
+        // A linha que definia o ROLE foi removida, pois não é mais necessária
         var saved = userRepository.save(entity);
         return saved.getUsuarioId();
     }
@@ -38,22 +40,18 @@ public class UserService {
     }
 
     public void updateUserById(String usuarioId, UpdateUserDto updateUserDto){
-
         var id = UUID.fromString(usuarioId);
-
         var usuarioExists = userRepository.findById(id);
 
         if (usuarioExists.isPresent()){
-
             var usuario = usuarioExists.get();
-
             if (updateUserDto.usuarioNome() != null){
                 usuario.setUsuarioNome(updateUserDto.usuarioNome());
             }
             if (updateUserDto.usuarioSenha() != null){
+                // A senha não será mais criptografada na atualização
                 usuario.setUsuarioSenha(updateUserDto.usuarioSenha());
             }
-
             userRepository.save(usuario);
         }
     }
@@ -61,7 +59,6 @@ public class UserService {
     public void deleteById(String usuarioId){
         var id = UUID.fromString(usuarioId);
         var usuarioExists = userRepository.existsById(id);
-
         if (usuarioExists){
             userRepository.deleteById(id);
         }
