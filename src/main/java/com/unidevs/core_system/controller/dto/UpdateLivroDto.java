@@ -1,17 +1,31 @@
-package com.unidevs.core_system.controller;
+package com.unidevs.core_system.controller.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import java.time.Year;
 
-/* DTO (Data Transfer Object) para a atualização de um novo livro.
- * 'Public record' serve para criar classes simples transportadoras de dados imutáveis e conciso
- * A diferença é que os seus campos são opcionais, permitindo atualizações parciais do livro. */
-
+/**
+ * DTO responsável pela atualização parcial dos dados de um livro já existente.
+ *
+ * Responsabilidade: permitir a modificação apenas dos campos desejados, sem exigir o reenvio de todas as
+ * informações originais.
+ *
+ * Processo:
+ * A ausência de anotações @NotBlank ou @NotNull é intencional, pois permite que os campos não enviados pelo
+ * cliente permaneçam inalterados na entidade persistida.
+ *
+ * Parâmetros
+ * @param titulo Novo título (opcional, 2–100 caracteres).
+ * @param autor  Novo autor (opcional, 2–100 caracteres).
+ * @param genero Novo gênero (opcional).
+ * @param anoPublicacao Novo ano de publicação (opcional, 1800 ≤ ano ≤ ano atual).
+ * @param quantidadeDisponivel Nova quantidade disponível (opcional, ≥ 0).
+ * @param isbn Novo código ISBN (opcional).
+ * @param tags Novas palavras-chave (opcional).
+ */
 public record UpdateLivroDto(
 
-        // A ausência de @NotBlank ou @NotNull é INTENCIONAL. Pois permite que o cliente não envie o campo 'titulo' se ele não quiser alterá-lo.
         @Size(min = 2, max = 100, message = "O título deve ter entre 2 e 100 caracteres.")
         String titulo,
 
@@ -30,9 +44,6 @@ public record UpdateLivroDto(
         String isbn,
         String tags
 ) {
-    // >>>> CONSTRUTOR VALIDAÇÃO DINÂMICA <<<<
-    // Usado aqui para a mesma validação dinâmica do ano que em CreateLivroDto Ele verifica se o ano fornecido (se houver) não está no futuro.
-    // Esta lógica só é executada se 'anoPublicacao' não for nulo. */
 
     public UpdateLivroDto {
         if (anoPublicacao != null && anoPublicacao > Year.now().getValue()) {
