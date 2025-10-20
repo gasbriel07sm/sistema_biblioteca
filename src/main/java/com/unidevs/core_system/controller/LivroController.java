@@ -1,7 +1,7 @@
-// Esta declaração define que a classe (Livro) pertence ao pacote de controladores
 package com.unidevs.core_system.controller;
 
-// Importa todas as classes e ferramentas necessárias.
+import com.unidevs.core_system.controller.dto.CreateLivroDto;
+import com.unidevs.core_system.controller.dto.UpdateLivroDto;
 import com.unidevs.core_system.entity.Livro;
 import com.unidevs.core_system.service.LivroService;
 import jakarta.validation.Valid;
@@ -12,93 +12,189 @@ import org.springframework.web.multipart.MultipartFile;
 import java.net.URI;
 import java.util.List;
 
-// >>>> CLASSES <<<<
-/* - @RestController: esta anotação combina duas outras: @Controller e @ResponseBody
- * - @Controller: marca a classe como um "controlador" do Spring MVC, que lida com requisições web
- * - @ResponseBody: diz que os retornos dos métodos desta classe devem ser convertidos para o corpo da resposta HTTP, em vez de tentar encontrar uma página HTML para renderizar
- * - @RequestMapping("/livro"): serve para definir o "endereço base" para todos os métodos dentro desta classe. T
-*/
+/**
+ * Controlador que serve para gerenciar as operações relacionadas à entidade Livro
+ *
+ * Responsabilidades: expor endpoints REST para criação, listagem, busca, atualização e exclusão de livros, além de
+ * funcionalidades específicas como empréstimo e reserva.
+ *
+ * Processo:
+ * 1. Cadastro de livros com upload opcional de imagem de capa;
+ * 2. Consulta individual e listagem completa de livros;
+ * 3. Busca por título e por tags sem distinção de maiúsculas/minúsculas;
+ * 4. Solicitação de empréstimo e reserva de livros via catálogo;
+ * 5. Atualização de dados e imagem do livro;
+ * 6. Exclusão lógica ou física do registro, conforme política do serviço.
+ *
+ * Respostas HTTP:
+ *   201 Created: Livro criado com sucesso;
+ *   200 OK: Operação realizada com sucesso (busca, reserva, empréstimo);
+ *   204 No Content: Atualização ou exclusão bem-sucedida sem retorno de dados;
+ *   400 Bad Request: Falha em requisição (ex: UUID inválido ou regra violada);
+ *   404 Not Found: Livro não encontrado.
+ */
 
 @RestController
 @RequestMapping("/livro")
 public class LivroController {
-
-    // >>>> INJENÇÃO DE DEPENDÊNCIA <<<<
-    // Define uma dependência de camada de serviço, o controler precisa do service para funcionar, o final garante que o service não pode ser trocado, uma vez que injetado
     private final LivroService livroService;
 
-    // Construtor de uma classe, usa para realizar a Injenção de Dependência que serve para encontrar uma Bean automaticamente, onde a Bean é um obejto gerenciado pelo Spring do tipo LivroService, permite usar ele sem precisar criar uma instância
+    /**
+     * Injeta a dependência da camada de serviço {@link LivroService}.
+     * @param livroService Serviço responsável pelas regras de negócio e persistência de livros
+     */
     public LivroController(LivroService livroService) {
         this.livroService = livroService;
     }
 
-    // >>>> ENDPOINTS (MÉTODOS QUE IRÃO LIDAR COM REQUISIÇÕES) <<<<
-    /* - @PostMapping: serve para mapear as requisições HTTP do tipo POST, é a operação padrão para CRIAR um novo recurso
-     * - consumes = {...}: serve para especificar que este endpoint espera dados no formato 'multipart/form-data', isto necessário para fazer upload de arquivos (a imagem da capa) com os dados (o DTO).
-     * - @Valid @RequestPart("livroDto"): responsável por pegar a parte da requisição chamada "livroDto" (que é um JSON), e converter para um objeto CreateLivroDto e a VALIDA usando as anotações (@NotBlank, etc.).
-     * - @RequestPart(value = "imagem", required = false): responsável por pegar a parte da requisição chamada "imagem" (que é o arquivo), a converte para um objeto MultipartFile. 'required = false' significa que o usuário não é obrigado a enviar uma imagem.
+    /**
+     * createLivro() — Cria um novo registro de livro com ou sem imagem de capa.
+     *
+     * Processo:
+     * 1. Valida os dados do DTO de criação;
+     * 2. Chama o serviço para persistir o livro e armazenar a imagem (se houver);
+     * 3. Retorna HTTP 201 Created com o location do recurso criado.
+     *
+     * Parâmetros:
+     * @param createLivroDto DTO contendo os dados do livro;
+     * @param imagemCapa Arquivo opcional de imagem da capa do livro;
+     * @return Resposta HTTP com código 201 Created e header Location.
      */
-
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<Void> createLivro(
             @Valid @RequestPart("livroDto") CreateLivroDto createLivroDto,
             @RequestPart(value = "imagem", required = false) MultipartFile imagemCapa) {
-        // Serve para criar a lógica de criação para a camada de serviço
         var livroId = livroService.createLivro(createLivroDto, imagemCapa);
-        // Retorna uma resposta HTTP 201 Created, onde o cabeçalho com "Location" define ao cliente a URL onde o novo livro pode ser encotrado
         return ResponseEntity.created(URI.create("/livro/" + livroId.toString())).build();
     }
 
-    /* - @GetMapping("/{livroId}"): serve para mapear requisições HTTP GET para buscar UM recurso específico
-     * - @PathVariable("livroId"): ele pega o valor da variável da URL e o passa para o parâmetro do metodo
-     * - @RequestParam("termo"): serve para pegar o valor de um parâmetro da URL
-     * - @PutMapping("/{livroId}"): serve para mapear as requisições HTTP PUT, usadas para ATUALIZAR um recurso existente por completo
-     * - @DeleteMapping("/{livroId}"): Mapeia requisições HTTP DELETE, usadas para REMOVER um recurso
+    /**
+     * getCatalogo() — Retorna uma lista de livros formatada para o catálogo.
+     *
+     * @return Lista de LivroCatalogoDto.
      */
+    @GetMapping("/catalogo")
+    public ResponseEntity<List<com.unidevs.core_system.controller.dto.LivroCatalogoDto>> getCatalogo() {
+        var livrosParaCatalogo = livroService.listarTodosParaCatalogo();
+        return ResponseEntity.ok(livrosParaCatalogo);
+    }
 
+    /**
+     * solicitarEmprestimo() — Solicita o empréstimo de um livro específico.
+     *
+     * Processo:
+     * 1. Valida o UUID informado;
+     * 2. Reduz a quantidade disponível no acervo;
+     * 3. Retorna 200 OK se o empréstimo for bem-sucedido ou 400 Bad Request se falhar.
+     *
+     * @param livroId UUID do livro.
+     * @return HTTP 200 em caso de sucesso ou 400 em caso de erro.
+     */
+    @PostMapping("/catalogo/emprestimo/{livroId}")
+    public ResponseEntity<Void> solicitarEmprestimo(@PathVariable("livroId") String livroId) {
+        try {
+            livroService.solicitarEmprestimo(livroId);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * reservarLivro() — Realiza a reserva de um livro para o usuário.
+     *
+     * @param livroId UUID do livro a ser reservado.
+     * @return HTTP 200 em caso de sucesso ou 400 em caso de falha.
+     */
+    @PostMapping("/catalogo/reservar/{livroId}")
+    public ResponseEntity<Void> reservarLivro(@PathVariable("livroId") String livroId) {
+        try {
+            livroService.reservarLivro(livroId);
+            return ResponseEntity.ok().build(); // Retorna 200 OK
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * getLivroById() — Retorna um livro específico a partir do UUID informado.
+     *
+     * @param livroId UUID do livro.
+     * @return Entidade {@link Livro} ou HTTP 404 se não encontrado.
+     */
     @GetMapping("/{livroId}")
     public ResponseEntity<Livro> getLivroById(@PathVariable("livroId") String livroId) {
         var livro = livroService.getLivroById(livroId);
-        // Se o livro foi encontrado (isPresent), retorna um HTTP 200 OK com o livro no corpo.
-        // Se não (isEmpty), retorna um HTTP 404 Not Found.
         return livro.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * listLivros() — Retorna todos os livros cadastrados.
+     *
+     * @return Lista de {@link Livro}.
+     */
     @GetMapping
     public ResponseEntity<List<Livro>> listLivros() {
         var livros = livroService.listLivros();
-        // Retorna HTTP 200 OK com a lista de livros (convertida para JSON) no corpo da resposta.
         return ResponseEntity.ok(livros);
     }
 
+    /**
+     * searchLivros() — Busca livros com base em um termo no título ou autor.
+     *
+     * @param termo Texto a ser buscado.
+     * @return Lista de {@link Livro} que correspondem ao termo.
+     */
     @GetMapping("/buscar")
     public ResponseEntity<List<Livro>> searchLivros(@RequestParam("termo") String termo) {
         var livros = livroService.searchLivros(termo);
         return ResponseEntity.ok(livros);
     }
 
+    /**
+     * searchByTag() — Busca livros a partir de uma tag específica.
+     *
+     * @param tag Tag associada ao livro.
+     * @return Lista de {@link Livro} com a tag informada.
+     */
     @GetMapping("/buscar-por-tag")
     public ResponseEntity<List<Livro>> searchByTag(@RequestParam("tag") String tag) {
         var livros = livroService.searchByTag(tag);
         return ResponseEntity.ok(livros);
     }
 
+    /**
+     * updateLivroById() — Atualiza os dados de um livro existente.
+     *
+     * Processo:
+     * 1. Valida o DTO de atualização;
+     * 2. Atualiza os campos alterados e a imagem (se houver);
+     * 3. Retorna HTTP 204 No Content indicando sucesso.
+     *
+     * @param livroId UUID do livro.
+     * @param updateLivroDto DTO com os novos dados.
+     * @param imagemCapa Nova imagem opcional.
+     * @return HTTP 204 No Content.
+     */
     @PutMapping(value = "/{livroId}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<Void> updateLivroById(
             @PathVariable("livroId") String livroId,
             @Valid @RequestPart("livroDto") UpdateLivroDto updateLivroDto,
             @RequestPart(value = "imagem", required = false) MultipartFile imagemCapa) {
-        // Serve para delegar a lógica de atualização para o serviço.
         livroService.updateLivroById(livroId, updateLivroDto, imagemCapa);
-        // Retorna HTTP 204 No Content, que é a resposta padrão para uma atualização bem-sucedida que não precisa retornar nenhum dado.
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * deleteById() — Exclui um livro pelo UUID informado.
+     *
+     * @param livroId UUID do livro.
+     * @return HTTP 204 No Content em caso de sucesso.
+     */
     @DeleteMapping("/{livroId}")
     public ResponseEntity<Void> deleteById(@PathVariable("livroId") String livroId) {
         livroService.deleteById(livroId);
-        // Retorna HTTP 204 No Content, indicando sucesso na remoção
         return ResponseEntity.noContent().build();
     }
 }

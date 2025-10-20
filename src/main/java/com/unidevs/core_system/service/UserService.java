@@ -1,7 +1,7 @@
 package com.unidevs.core_system.service;
 
-import com.unidevs.core_system.controller.CreateUserDto;
-import com.unidevs.core_system.controller.UpdateUserDto;
+import com.unidevs.core_system.controller.dto.CreateUserDto;
+import com.unidevs.core_system.controller.dto.UpdateUserDto;
 import com.unidevs.core_system.entity.User;
 import com.unidevs.core_system.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,6 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    // O PasswordEncoder foi removido do construtor
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -24,9 +23,8 @@ public class UserService {
         var entity = new User(
                 createUserDto.usuarioRA(),
                 createUserDto.usuarioNome(),
-                createUserDto.usuarioSenha() // SALVANDO SENHA EM TEXTO PURO (APENAS PARA TESTE)
+                createUserDto.usuarioSenha()
         );
-        // A linha que definia o ROLE foi removida, pois não é mais necessária
         var saved = userRepository.save(entity);
         return saved.getUsuarioId();
     }
@@ -49,7 +47,6 @@ public class UserService {
                 usuario.setUsuarioNome(updateUserDto.usuarioNome());
             }
             if (updateUserDto.usuarioSenha() != null){
-                // A senha não será mais criptografada na atualização
                 usuario.setUsuarioSenha(updateUserDto.usuarioSenha());
             }
             userRepository.save(usuario);
