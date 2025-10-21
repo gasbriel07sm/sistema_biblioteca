@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sistema de Biblioteca Escolar" />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/home/styles.css" />
+    <title>Biblioteca Escolar - Home</title>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container header-container">
+            <div class="logo">
+                <i class="bx bx-book-reader"></i>
+                <h1>BiblioTech</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#" class="active">Início</a></li>
+                    <li><a href="#">Catálogo</a></li>
+                    <li><a href="#">Meus Empréstimos</a></li>
+                    <li><a href="#">Sobre</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <span class="user-welcome" th:if="${user != null}">Olá, <span th:text="${user.nome}">Usuário</span></span>
+                <a href="/profile" class="btn btn-secondary"><i class="bx bxs-user"></i></a>
+                <a href="/logout" class="btn btn-outline">Sair</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Bem-vindo à Biblioteca Escolar</h2>
+                    <p>Descubra uma vasta coleção de livros, e-books e recursos educacionais.</p>
+                    <div class="search-box">
+                        <input type="text" placeholder="Busque por título, autor ou categoria..." />
+                        <button class="btn btn-primary"><i class="bx bx-search"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção visível apenas para administradores -->
+        <section class="admin-dashboard" th:if="${isAdmin}">
+            <div class="container">
+                <h2>Painel Administrativo</h2>
+                <div class="admin-cards">
+                    <div class="card">
+                        <i class="bx bx-book-add"></i>
+                        <h3>Gerenciar Livros</h3>
+                        <p>Cadastre, edite e remova livros do acervo</p>
+                        <a href="/admin/books" class="btn btn-primary">Acessar</a>
+                    </div>
+                    <div class="card">
+                        <i class="bx bx-user-plus"></i>
+                        <h3>Gerenciar Usuários</h3>
+                        <p>Administre os usuários do sistema</p>
+                        <a href="/admin/users" class="btn btn-primary">Acessar</a>
+                    </div>
+                    <div class="card">
+                        <i class="bx bx-transfer-alt"></i>
+                        <h3>Empréstimos</h3>
+                        <p>Gerencie solicitações e devoluções</p>
+                        <a href="/admin/loans" class="btn btn-primary">Acessar</a>
+                    </div>
+                    <div class="card">
+                        <i class="bx bx-bar-chart-alt-2"></i>
+                        <h3>Relatórios</h3>
+                        <p>Visualize estatísticas e relatórios</p>
+                        <a href="/admin/reports" class="btn btn-primary">Acessar</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de livros em destaque - visível para todos -->
+        <section class="featured-books">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Livros em Destaque</h2>
+                    <a href="/catalog" class="btn btn-outline">Ver catálogo completo</a>
+                </div>
+                <div class="books-grid">
+                    <!-- Livros serão renderizados dinamicamente do back-end -->
+                    <div class="book-card" th:each="book : ${featuredBooks}">
+                        <div class="book-cover">
+                            <img th:src="${book.coverUrl}" alt="Capa do livro" />
+                        </div>
+                        <div class="book-info">
+                            <h3 th:text="${book.title}">Título do Livro</h3>
+                            <p class="author" th:text="${book.author}">Autor</p>
+                            <div class="availability" th:classappend="${book.available} ? 'available' : 'unavailable'">
+                                <span th:if="${book.available}" class="status-badge">Disponível</span>
+                                <span th:unless="${book.available}" class="status-badge">Indisponível</span>
+                            </div>
+                            <a th:href="@{'/book/' + ${book.id}}" class="btn btn-secondary">Ver detalhes</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Livros estáticos para demonstração -->
+                    <div class="book-card">
+                        <div class="book-cover">
+                            <img src="https://m.media-amazon.com/images/I/81YOuOGFCJL._AC_UF1000,1000_QL80_.jpg" alt="Capa do livro" />
+                        </div>
+                        <div class="book-info">
+                            <h3>O Senhor dos Anéis</h3>
+                            <p class="author">J.R.R. Tolkien</p>
+                            <div class="availability available">
+                                <span class="status-badge">Disponível</span>
+                            </div>
+                            <a href="#" class="btn btn-secondary">Ver detalhes</a>
+                        </div>
+                    </div>
+
+                    <div class="book-card">
+                        <div class="book-cover">
+                            <img src="https://m.media-amazon.com/images/I/71tBWUsgU9L._AC_UF1000,1000_QL80_.jpg" alt="Capa do livro" />
+                        </div>
+                        <div class="book-info">
+                            <h3>O Pequeno Príncipe</h3>
+                            <p class="author">Antoine de Saint-Exupéry</p>
+                            <div class="availability unavailable">
+                                <span class="status-badge">Indisponível</span>
+                            </div>
+                            <a href="#" class="btn btn-secondary">Ver detalhes</a>
+                        </div>
+                    </div>
+
+                    <div class="book-card">
+                        <div class="book-cover">
+                            <img src="https://m.media-amazon.com/images/I/81ibfYk4qmL._AC_UF1000,1000_QL80_.jpg" alt="Capa do livro" />
+                        </div>
+                        <div class="book-info">
+                            <h3>Harry Potter e a Pedra Filosofal</h3>
+                            <p class="author">J.K. Rowling</p>
+                            <div class="availability available">
+                                <span class="status-badge">Disponível</span>
+                            </div>
+                            <a href="#" class="btn btn-secondary">Ver detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de ações para usuários comuns -->
+        <section class="user-actions-section">
+            <div class="container">
+                <h2>Ações Rápidas</h2>
+                <div class="action-cards">
+                    <div class="action-card">
+                        <i class="bx bx-book-heart"></i>
+                        <h3>Meus Favoritos</h3>
+                        <a href="/favorites" class="btn btn-secondary">Acessar</a>
+                    </div>
+                    <div class="action-card">
+                        <i class="bx bx-history"></i>
+                        <h3>Histórico</h3>
+                        <a href="/history" class="btn btn-secondary">Acessar</a>
+                    </div>
+                    <div class="action-card">
+                        <i class="bx bx-book-reader"></i>
+                        <h3>Solicitar Empréstimo</h3>
+                        <a href="/new-loan" class="btn btn-primary">Solicitar</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="bx bx-book-reader"></i>
+                    <h2>BiblioTech</h2>
+                </div>
+                <div class="footer-links">
+                    <h3>Links Úteis</h3>
+                    <ul>
+                        <li><a href="#">Termos de Uso</a></li>
+                        <li><a href="#">Política de Privacidade</a></li>
+                        <li><a href="#">Ajuda</a></li>
+                        <li><a href="#">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h3>Contato</h3>
+                    <p><i class="bx bx-map"></i> Av. Principal, 123 - Centro</p>
+                    <p><i class="bx bx-phone"></i> (11) 1234-5678</p>
+                    <p><i class="bx bx-envelope"></i> contato@biblioteca.edu.br</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 BiblioTech - Sistema de Biblioteca Escolar. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

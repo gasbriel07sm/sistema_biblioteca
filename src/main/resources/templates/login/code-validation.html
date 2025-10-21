@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Validação de código de recuperação de senha." />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../../static/css/login/styles.css" />
+    <title>Biblioteca - Validar código</title>
+</head>
+<body>
+<div class="layout">
+    <img src="../../static/assets/login/login-library-animate.svg" alt="" class="side-img" loading="lazy" />
+
+    <main class="container" role="main">
+        <form method="post" action="#" autocomplete="one-time-code" novalidate>
+            <h1>Insira o código</h1>
+
+            <div class="input-box">
+                <label class="sr-only" for="reset-code">Código</label>
+                <input
+                        id="reset-code"
+                        name="code"
+                        placeholder="Código"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        maxlength="6"
+                        required
+                        aria-describedby="code-help"
+                        autocomplete="one-time-code"
+                />
+                <i class="fas fa-envelope" aria-hidden="true"></i>
+            </div>
+            <small id="code-help" class="sr-only">Digite o código numérico enviado por e-mail.</small>
+
+            <button type="submit" class="btn-login">Confirmar código</button>
+        </form>
+    </main>
+
+    <img src="../../static/assets/login/login-knowledge-animate.svg" alt="" class="side-img" loading="lazy" />
+</div>
+</body>
+</html>
