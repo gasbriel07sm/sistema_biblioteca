@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Cores principais */
+  --primary: #2c6e49;
+  --primary-light: #4c956c;
+  --secondary: #ffc300;
+  --dark: #2b2b2b;
+  --light: #f8f9fa;
+  --gray: #6c757d;
+  --gray-light: #e9ecef;
+  --danger: #dc3545;
+  
+  /* Cores de texto */
+  --text-dark: #333;
+  --text-light: #f8f9fa;
+  --text-muted: #6c757d;
+  
+  /* Sombras */
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Raios de borda */
+  --border-radius: 0.5rem;
+  --border-radius-lg: 1rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: var(--light);
+  color: var(--text-dark);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.error-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.error-content {
+  flex: 1;
+  text-align: center;
+  max-width: 600px;
+}
+
+.error-icon {
+  font-size: 5rem;
+  color: var(--danger);
+  margin-bottom: 1rem;
+  animation: pulse 2s infinite;
+}
+
+.error-content h1 {
+  font-size: 6rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.error-content h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 1.5rem;
+}
+
+.error-content p {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--text-light);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--text-dark);
+}
+
+.btn-secondary:hover {
+  background-color: #e6b000;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+.error-illustration {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-illustration img {
+  max-width: 100%;
+  height: auto;
+  max-height: 400px;
+  animation: float 6s ease-in-out infinite;
+}
+
+.error-footer {
+  background-color: var(--dark);
+  color: var(--text-light);
+  padding: 1.5rem 0;
+  margin-top: 2rem;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo i {
+  font-size: 2rem;
+  color: var(--secondary);
+}
+
+.footer-content p {
+  color: var(--gray-light);
+  font-size: 0.9rem;
+}
+
+/* Animações */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+  .error-container {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .error-content {
+    max-width: 100%;
+  }
+  
+  .error-illustration img {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 576px) {
+  .error-content h1 {
+    font-size: 4rem;
+  }
+  
+  .error-content h2 {
+    font-size: 1.5rem;
+  }
+  
+  .error-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+  
+  .error-illustration img {
+    max-height: 200px;
+  }
+}

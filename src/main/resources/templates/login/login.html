@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tela de login da Biblioteca." />
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="/css/login/styles.css" />
+    <title>Biblioteca - Login</title>
+</head>
+<body>
+<div class="layout">
+    <img src="assets/login/login-bibliophile-animate.svg" alt="" class="side-img" loading="lazy" />
+
+    <main class="container" role="main">
+        <form method="post" action="/login-process" autocomplete="on" novalidate>
+        <h1>Login</h1>
+            <div th:if="${errorMessage}" class="error-message">
+                <p th:text="${errorMessage}" style="color: red;"></p>
+            </div>
+            <div th:if="${successMessage}" class="success-message">
+                <p th:text="${successMessage}" style="color: green;"></p>
+            </div>
+
+
+            <div class="input-box">
+                <input id="login" name="login" placeholder="Usuário" type="login" autocomplete="username" required />
+                <i class="bx bxs-user" aria-hidden="true"></i>
+            </div>
+
+            <div class="input-box">
+                <input id="login-password" name="password" placeholder="Senha" type="password" autocomplete="current-password" required />
+                <i class="bx bxs-lock-alt" aria-hidden="true"></i>
+            </div>
+
+            <div class="remember-password">
+                <label for="remember">
+                    <input id="remember" name="remember" type="checkbox" />
+                    Lembrar minha senha
+                </label>
+                <a href="reset-password.html">Esqueci a senha</a>
+            </div>
+
+            <button type="submit" class="btn-login">Login</button>
+
+            <div class="register-link">
+                <p>Não tem uma conta? <a href="/register">Cadastre-se</a></p>
+            </div>
+        </form>
+    </main>
+
+    <img src="assets/login/login-man-animate.svg" alt="" class="side-img" loading="lazy" />
+</div>
+</body>
+</html>
