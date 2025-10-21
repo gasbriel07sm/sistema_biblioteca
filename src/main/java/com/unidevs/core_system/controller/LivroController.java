@@ -7,6 +7,7 @@ import com.unidevs.core_system.service.LivroService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.net.URI;
@@ -60,6 +61,7 @@ public class LivroController {
      * @param imagemCapa Arquivo opcional de imagem da capa do livro;
      * @return Resposta HTTP com código 201 Created e header Location.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<Void> createLivro(
             @Valid @RequestPart("livroDto") CreateLivroDto createLivroDto,
@@ -73,6 +75,7 @@ public class LivroController {
      *
      * @return Lista de LivroCatalogoDto.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/catalogo")
     public ResponseEntity<List<com.unidevs.core_system.controller.dto.LivroCatalogoDto>> getCatalogo() {
         var livrosParaCatalogo = livroService.listarTodosParaCatalogo();
@@ -90,6 +93,7 @@ public class LivroController {
      * @param livroId UUID do livro.
      * @return HTTP 200 em caso de sucesso ou 400 em caso de erro.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/catalogo/emprestimo/{livroId}")
     public ResponseEntity<Void> solicitarEmprestimo(@PathVariable("livroId") String livroId) {
         try {
@@ -106,6 +110,7 @@ public class LivroController {
      * @param livroId UUID do livro a ser reservado.
      * @return HTTP 200 em caso de sucesso ou 400 em caso de falha.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PostMapping("/catalogo/reservar/{livroId}")
     public ResponseEntity<Void> reservarLivro(@PathVariable("livroId") String livroId) {
         try {
@@ -122,6 +127,7 @@ public class LivroController {
      * @param livroId UUID do livro.
      * @return Entidade {@link Livro} ou HTTP 404 se não encontrado.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/{livroId}")
     public ResponseEntity<Livro> getLivroById(@PathVariable("livroId") String livroId) {
         var livro = livroService.getLivroById(livroId);
@@ -134,6 +140,7 @@ public class LivroController {
      *
      * @return Lista de {@link Livro}.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping
     public ResponseEntity<List<Livro>> listLivros() {
         var livros = livroService.listLivros();
@@ -146,6 +153,7 @@ public class LivroController {
      * @param termo Texto a ser buscado.
      * @return Lista de {@link Livro} que correspondem ao termo.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/buscar")
     public ResponseEntity<List<Livro>> searchLivros(@RequestParam("termo") String termo) {
         var livros = livroService.searchLivros(termo);
@@ -158,6 +166,7 @@ public class LivroController {
      * @param tag Tag associada ao livro.
      * @return Lista de {@link Livro} com a tag informada.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @GetMapping("/buscar-por-tag")
     public ResponseEntity<List<Livro>> searchByTag(@RequestParam("tag") String tag) {
         var livros = livroService.searchByTag(tag);
@@ -177,6 +186,7 @@ public class LivroController {
      * @param imagemCapa Nova imagem opcional.
      * @return HTTP 204 No Content.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(value = "/{livroId}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<Void> updateLivroById(
             @PathVariable("livroId") String livroId,
@@ -192,6 +202,7 @@ public class LivroController {
      * @param livroId UUID do livro.
      * @return HTTP 204 No Content em caso de sucesso.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{livroId}")
     public ResponseEntity<Void> deleteById(@PathVariable("livroId") String livroId) {
         livroService.deleteById(livroId);

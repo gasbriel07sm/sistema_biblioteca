@@ -4,6 +4,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +23,6 @@ import java.util.Map;
  * inválidos e suas respectivas mensagens de erro.
  *
  * Parâmetros:
- * @param ex Exceção lançada quando os argumentos de metodo anotados com @Valid falham na validação
  * @return {@link ResponseEntity} contendo um mapa JSON com chave (campo) e valor (mensagem de erro)
  */
 
@@ -34,5 +36,10 @@ public class GlobalExceptionHandler {
                 errors.put(error.getField(), error.getDefaultMessage()));
 
         return ResponseEntity.badRequest().body(errors);
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ModelAndView handle404Error(NoHandlerFoundException ex){
+        return new ModelAndView("error/404");
     }
 }
